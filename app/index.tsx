@@ -1,6 +1,7 @@
 // import stuff from react and react native
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Dimensions, FlatList, Text, View } from "react-native";
+import { Dimensions, FlatList, Pressable, Text, View } from "react-native";
 
 // import from our utils and types
 import { PokeCard } from "@/components/PokeCard";
@@ -26,7 +27,7 @@ export default function Index() {
   // get pokemon data
   async function fetchMons() {
     try {
-      const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1500");
+      const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=100");
       const data = await res.json(); // store response as json
 
       const details = await Promise.all(
@@ -50,11 +51,21 @@ export default function Index() {
     }
   }
 
+  // helper to get url id
+  function getIdFromUrl(url: string) {
+    // example: https://pokeapi.co/api/v2/pokemon/25/
+    return url.split("/").filter(Boolean).pop()!;
+  }
+
+
+
   // show each pokemon on a PokeCard
   return (
     <View style={{ flex: 1, backgroundColor: "#FFF" }}>
+      {/* Screen title */}
       <Text style={{ fontSize: 22, fontWeight: "700", padding: 12 }}>Pokemon List</Text>
 
+      {/* row with 3 mons each */}
       <FlatList
         style={{ flex: 1 }}
         data={pokemons}
@@ -62,7 +73,20 @@ export default function Index() {
         numColumns={3}
         contentContainerStyle={{ padding: PADDING }}
         columnWrapperStyle={{ gap: GAP, marginBottom: GAP }}
-        renderItem={({ item }) => <PokeCard pokemon={item} width={CARD_W} />}
+        renderItem={({ item }) => {
+          const id = getIdFromUrl(item.url);
+
+          return (
+            <Pressable
+              onPress={() => router.push({ pathname: "/details", params: { id } })}
+              style={({ pressed }) => [
+                { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] },
+              ]}
+            >
+              <PokeCard pokemon={item} width={CARD_W} />
+            </Pressable>
+          );
+        }}
       />
     </View>
   );

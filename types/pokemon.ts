@@ -8,3 +8,18 @@ export interface Pokemon {
     shinyBack?: string | null;
     types: string[];
 }
+
+export interface PokemonDetails extends Pokemon {
+    description: string;
+    height: number;
+    weight: number;
+    abilities: string[];
+    stats: {
+        hp: number;
+        attack: number;
+        defense: number;
+        specialAttack: number;
+        specialDefense: number;
+        speed: number;
+    };
+}
