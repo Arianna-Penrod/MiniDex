@@ -26,7 +26,7 @@ export default function Index() {
   // get pokemon data
   async function fetchMons() {
     try {
-      const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
+      const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1500");
       const data = await res.json(); // store response as json
 
       const details = await Promise.all(
@@ -52,10 +52,11 @@ export default function Index() {
 
   // show each pokemon on a PokeCard
   return (
-    <View>
+    <View style={{ flex: 1, backgroundColor: "#FFF" }}>
       <Text style={{ fontSize: 22, fontWeight: "700", padding: 12 }}>Pokemon List</Text>
 
       <FlatList
+        style={{ flex: 1 }}
         data={pokemons}
         keyExtractor={(p) => p.name}
         numColumns={3}
