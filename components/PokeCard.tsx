@@ -12,15 +12,19 @@ export function PokeCard({ pokemon, width }: { pokemon: Pokemon; width: number }
     const [t1, t2] = pokemon.types;
     const c1 = hexToRgba(typeColor(t1), BG_ALPHA); // type 1
     const c2 = hexToRgba(typeColor(t2), BG_ALPHA); // type 2
+    const id = getIdFromUrl(pokemon.url);
 
     // get the content like name, types, and sprite to display on home page
     const content = (
 
         <View style={styles.cardInner}>
-            {/* name */}
-            <Text style={styles.name} numberOfLines={1}>
-                {pokemon.name}
-            </Text>
+            <View style={styles.headingRow}>
+                {/* name */}
+                <Text style={styles.name} numberOfLines={1}>
+                    {pokemon.name}
+                </Text>
+                <Text style={styles.number}>#{id.padStart(3, "0")}</Text>
+            </View>
             {/* sprite*/}
             <View style={styles.spriteWrap}>
                 {pokemon.front ? (
@@ -28,9 +32,15 @@ export function PokeCard({ pokemon, width }: { pokemon: Pokemon; width: number }
                 ) : null}
             </View>
             {/* pokemon types */}
-            <Text style={styles.types} numberOfLines={1}>
-                {pokemon.types.join(", ")}
-            </Text>
+            <View style={styles.typeRow}>
+                {pokemon.types.map((type) => (
+                    <View key={type} style={[styles.typePill, { backgroundColor: typeColor(type) }]}>
+                        <Text style={styles.typeText} numberOfLines={1}>
+                            {type}
+                        </Text>
+                    </View>
+                ))}
+            </View>
         </View>
     );
 
@@ -50,4 +60,8 @@ export function PokeCard({ pokemon, width }: { pokemon: Pokemon; width: number }
             {content}
         </LinearGradient>
     );
+}
+
+function getIdFromUrl(url: string) {
+    return url.split("/").filter(Boolean).pop() || "0";
 }
