@@ -1,13 +1,14 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { Image, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
+import { FavoriteButton } from "./FavoriteButton";
 import { pokemonStyles as styles } from "../styles/pokemonStyles";
 import { Pokemon } from "../types/pokemon";
 import { hexToRgba, typeColor } from "../utils/typeColors";
 
 const BG_ALPHA = 0.30;
 
-export function PokeCard({ pokemon, width }: { pokemon: Pokemon; width: number }) {
+export function PokeCard({ pokemon, width, onPress }: { pokemon: Pokemon; width: number; onPress?: () => void }) {
     // split pokemon types into 2
     const [t1, t2] = pokemon.types;
     const c1 = hexToRgba(typeColor(t1), BG_ALPHA); // type 1
@@ -18,6 +19,8 @@ export function PokeCard({ pokemon, width }: { pokemon: Pokemon; width: number }
     const content = (
 
         <View style={styles.cardInner}>
+            <Pressable accessibilityRole="button" accessibilityLabel={`View ${pokemon.name} details`} onPress={onPress}
+                disabled={!onPress} style={({ pressed }) => ({ gap: 8, opacity: pressed ? 0.7 : 1 })}>
             <View style={styles.headingRow}>
                 {/* name */}
                 <Text style={styles.name} numberOfLines={1}>
@@ -31,7 +34,9 @@ export function PokeCard({ pokemon, width }: { pokemon: Pokemon; width: number }
                     <Image source={{ uri: pokemon.front }} style={styles.sprite} resizeMode="contain" />
                 ) : null}
             </View>
+            </Pressable>
             {/* pokemon types */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 4 }}>
             <View style={styles.typeRow}>
                 {pokemon.types.map((type) => (
                     <View key={type} style={[styles.typePill, { backgroundColor: typeColor(type) }]}>
@@ -40,6 +45,8 @@ export function PokeCard({ pokemon, width }: { pokemon: Pokemon; width: number }
                         </Text>
                     </View>
                 ))}
+            </View>
+            <FavoriteButton pokemon={pokemon} />
             </View>
         </View>
     );

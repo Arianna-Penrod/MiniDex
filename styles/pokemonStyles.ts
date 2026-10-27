@@ -29,11 +29,13 @@ export const pokemonStyles = StyleSheet.create({
     name: {
         color: "#1C2636",
         flex: 1,
+        fontFamily: "Courier New",
         fontWeight: "700",
         textTransform: "capitalize",
     },
     number: {
         color: "#526070",
+        fontFamily: "Courier New",
         fontSize: 12,
         fontWeight: "700",
     },
@@ -50,6 +52,7 @@ export const pokemonStyles = StyleSheet.create({
         width: "84%",
     },
     typeRow: {
+        flex: 1,
         flexDirection: "row",
         flexWrap: "wrap",
         gap: 6,
@@ -63,6 +66,7 @@ export const pokemonStyles = StyleSheet.create({
     },
     typeText: {
         color: "#FFF",
+        fontFamily: "Courier New",
         fontSize: 11,
         fontWeight: "800",
         textTransform: "uppercase",

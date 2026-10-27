@@ -1,4 +1,5 @@
 import { PokemonDetails } from "@/types/pokemon";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { hexToRgba, typeColor } from "@/utils/typeColors";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -41,6 +42,7 @@ export default function Details() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const { width } = useWindowDimensions();
     const [pokemon, setPokemon] = useState<PokemonDetails | null>(null);
+    const [selectedSprite, setSelectedSprite] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
 
@@ -92,11 +94,13 @@ export default function Details() {
 
                 if (!ignoreRequest) {
                     setPokemon(p);
+                    setSelectedSprite(p.front ?? p.shinyFront ?? p.back ?? null);
                 }
             } catch (e) {
                 if (!ignoreRequest) {
                     setHasError(true);
                     setPokemon(null);
+                    setSelectedSprite(null);
                 }
 
                 console.error(e);
@@ -118,14 +122,14 @@ export default function Details() {
     const secondaryType = pokemon?.types[1] ?? primaryType;
     const primaryColor = typeColor(primaryType);
     const secondaryColor = typeColor(secondaryType);
-    const mainSprite = pokemon?.front ?? pokemon?.shinyFront ?? pokemon?.back;
+    const mainSprite = selectedSprite ?? pokemon?.front ?? pokemon?.shinyFront ?? pokemon?.back;
 
     return (
         <ScrollView style={styles.screen} contentContainerStyle={styles.scrollContent}>
             <View style={styles.page}>
                 <Pressable
                     accessibilityRole="button"
-                    onPress={() => router.back()}
+                    onPress={() => router.canGoBack() ? router.back() : router.replace("/")}
                     style={({ pressed }) => [
                         styles.backButton,
                         pressed ? styles.pressed : null,
@@ -164,19 +168,6 @@ export default function Details() {
                         >
                             <View style={styles.visualHeader}>
                                 <Text style={styles.number}>#{formatId(id)}</Text>
-                                <View style={styles.typeRow}>
-                                    {pokemon.types.map((type) => (
-                                        <View
-                                            key={type}
-                                            style={[
-                                                styles.typePill,
-                                                { backgroundColor: typeColor(type) },
-                                            ]}
-                                        >
-                                            <Text style={styles.typeText}>{type}</Text>
-                                        </View>
-                                    ))}
-                                </View>
                             </View>
 
                             <View style={styles.spriteStage}>
@@ -190,9 +181,15 @@ export default function Details() {
                             </View>
 
                             <View style={styles.spriteStrip}>
-                                <SpriteTile label="Front" uri={pokemon.front} />
-                                <SpriteTile label="Back" uri={pokemon.back} />
-                                <SpriteTile label="Shiny" uri={pokemon.shinyFront} />
+                                <SpriteTile label="Front" uri={pokemon.front} onPress={setSelectedSprite} />
+                                <SpriteTile label="Back" uri={pokemon.back} onPress={setSelectedSprite} />
+                                <SpriteTile label="Shiny" uri={pokemon.shinyFront} onPress={setSelectedSprite} />
+                            </View>
+                            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 12 }}>
+                                <View style={[styles.typeRow, { flex: 1, justifyContent: "flex-start" }]}>
+                                    {pokemon.types.map(type => <View key={type} style={[styles.typePill, { backgroundColor: typeColor(type) }]}><Text style={styles.typeText}>{type}</Text></View>)}
+                                </View>
+                                <FavoriteButton pokemon={pokemon} />
                             </View>
                         </LinearGradient>
 
@@ -234,16 +231,31 @@ export default function Details() {
     );
 }
 
-function SpriteTile({ label, uri }: { label: string; uri?: string | null }) {
+function SpriteTile({
+    label,
+    uri,
+    onPress,
+}: {
+    label: string;
+    uri?: string | null;
+    onPress: (uri: string) => void;
+}) {
     return (
-        <View style={styles.spriteTile}>
+        <Pressable
+            disabled={!uri}
+            onPress={() => uri && onPress(uri)}
+            style={({ pressed }) => [
+                styles.spriteTile,
+                pressed ? styles.pressed : null,
+            ]}
+        >
             <View style={styles.spriteTileImageWrap}>
                 {uri ? (
                     <Image source={{ uri }} style={styles.spriteTileImage} resizeMode="contain" />
                 ) : null}
             </View>
             <Text style={styles.spriteTileLabel}>{label}</Text>
-        </View>
+        </Pressable>
     );
 }
 
@@ -358,11 +370,13 @@ const styles = StyleSheet.create({
     },
     backIcon: {
         color: "#1C2636",
+        fontFamily: "Courier New",
         fontSize: 32,
         lineHeight: 34,
     },
     backText: {
         color: "#1C2636",
+        fontFamily: "Courier New",
         fontSize: 15,
         fontWeight: "700",
     },
@@ -377,15 +391,18 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         color: "#687386",
+        fontFamily: "Courier New",
         fontSize: 15,
     },
     errorTitle: {
         color: "#1C2636",
+        fontFamily: "Courier New",
         fontSize: 22,
         fontWeight: "800",
     },
     errorText: {
         color: "#687386",
+        fontFamily: "Courier New",
         fontSize: 15,
         textAlign: "center",
     },
@@ -415,6 +432,7 @@ const styles = StyleSheet.create({
     },
     number: {
         color: "#526070",
+        fontFamily: "Courier New",
         fontSize: 16,
         fontWeight: "800",
     },
@@ -432,6 +450,7 @@ const styles = StyleSheet.create({
     },
     typeText: {
         color: "#FFF",
+        fontFamily: "Courier New",
         fontSize: 11,
         fontWeight: "800",
         textTransform: "uppercase",
@@ -471,6 +490,7 @@ const styles = StyleSheet.create({
     },
     spriteTileLabel: {
         color: "#526070",
+        fontFamily: "Courier New",
         fontSize: 12,
         fontWeight: "700",
         textAlign: "center",
@@ -487,12 +507,14 @@ const styles = StyleSheet.create({
     },
     name: {
         color: "#1C2636",
+        fontFamily: "Courier New",
         fontSize: 32,
         fontWeight: "900",
         marginBottom: 10,
     },
     description: {
         color: "#526070",
+        fontFamily: "Courier New",
         fontSize: 15,
         lineHeight: 22,
     },
@@ -512,6 +534,7 @@ const styles = StyleSheet.create({
     },
     metricLabel: {
         color: "#687386",
+        fontFamily: "Courier New",
         fontSize: 12,
         fontWeight: "700",
         marginBottom: 4,
@@ -519,11 +542,13 @@ const styles = StyleSheet.create({
     },
     metricValue: {
         color: "#1C2636",
+        fontFamily: "Courier New",
         fontSize: 18,
         fontWeight: "800",
     },
     sectionTitle: {
         color: "#1C2636",
+        fontFamily: "Courier New",
         fontSize: 16,
         fontWeight: "800",
         marginBottom: 10,
@@ -543,6 +568,7 @@ const styles = StyleSheet.create({
     },
     abilityText: {
         color: "#1C2636",
+        fontFamily: "Courier New",
         fontSize: 13,
         fontWeight: "700",
     },
@@ -557,6 +583,7 @@ const styles = StyleSheet.create({
     },
     statLabel: {
         color: "#526070",
+        fontFamily: "Courier New",
         fontSize: 12,
         fontWeight: "800",
         width: 64,
@@ -574,6 +601,7 @@ const styles = StyleSheet.create({
     },
     statValue: {
         color: "#1C2636",
+        fontFamily: "Courier New",
         fontSize: 13,
         fontWeight: "800",
         textAlign: "right",
